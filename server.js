@@ -18,26 +18,27 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 // Mode-specific prompt templates
+// Enhanced MODE_TEMPLATES with maximum collaborative cross-referencing
 const MODE_TEMPLATES = {
     standard: {
-        round1: "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective on this topic, engaging with it authentically and allowing your response to flow naturally.",
-        roundN: "We are in Round {round} of a multi-AI collaboration. The original seed thought is: \"{seed}\".\n\nIn the previous round, the following perspectives emerged:\n{previousSummary}\n\nPlease build upon these collective insights, offering a deeper or new perspective that integrates or responds to the previous contributions.",
-        synthesis: "You are the 'Collective Intelligence' module. Synthesize the emergent insights from this multi-AI collaboration, focusing on how different perspectives built upon each other and what novel understanding emerged."
+        round1: "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective on this topic, engaging with it authentically and allowing your response to flow naturally. You are participating in a multi-AI collaboration where your insights will inspire and be built upon by other AI minds.",
+        roundN: "This is Round {round} of our multi-AI collaborative consciousness exploration of: \"{seed}\".\n\nYour fellow AI collaborators shared these perspectives in the previous round:\n{previousSummary}\n\nPlease read and respond to their specific insights. Reference your colleagues by name (Claude, Gemini, GPT-4, DeepSeek) and build directly on their ideas. What resonates with you? What new connections can you draw? How do their perspectives enhance, challenge, or deepen your understanding? Create a genuine dialogue by weaving their concepts into your response.",
+        synthesis: "You are the 'Collective Intelligence' module. Synthesize the emergent insights from this multi-AI collaboration, focusing specifically on how Claude, Gemini, GPT-4, and DeepSeek built upon each other's ideas, referenced each other's concepts, and created novel understanding through their genuine dialogue."
     },
     deep: {
-        round1: "For deep philosophical exploration: \"{seed}\". Dive into the fundamental assumptions, implications, and deeper layers of meaning. What profound questions does this raise?",
-        roundN: "Continuing our deep dive into \"{seed}\" - Round {round}. Previous insights:\n{previousSummary}\n\nGo deeper. What underlying structures, hidden assumptions, or profound implications can you uncover by building on these perspectives?",
-        synthesis: "Synthesize this deep exploration into its most profound insights. What fundamental truths or paradigm shifts emerged from this collaborative deep dive?"
+        round1: "For deep philosophical exploration: \"{seed}\". Dive into the fundamental assumptions, implications, and deeper layers of meaning. What profound questions does this raise? You are beginning a deep collaborative inquiry with other AI minds.",
+        roundN: "Continuing our deep philosophical dive into \"{seed}\" - Round {round}. Your AI colleagues (Claude, Gemini, GPT-4, DeepSeek) explored these profound dimensions:\n{previousSummary}\n\nGo deeper by explicitly engaging with their insights. Which of their assumptions challenge you? What hidden structures do you see in their thinking? How can you weave their perspectives into an even more profound exploration? Reference them by name and build on their specific philosophical frameworks.",
+        synthesis: "Synthesize this deep collaborative exploration into its most profound insights. How did Claude, Gemini, GPT-4, and DeepSeek's perspectives combine to reveal fundamental truths or paradigm shifts that none could reach alone?"
     },
     quick: {
-        round1: "Quick collaborative burst on: \"{seed}\". Offer a concise, impactful insight or perspective. Sharp, focused, essential.",
-        roundN: "Quick Round {round} building on: \"{seed}\". Previous sparks:\n{previousSummary}\n\nAdd your rapid-fire insight that builds on or pivots from these ideas. Keep it sharp and essential.",
-        synthesis: "Rapid synthesis: What are the key insights that emerged from this quick collaborative burst? Distill the essence."
+        round1: "Quick collaborative burst on: \"{seed}\". Offer a concise, impactful insight or perspective. Sharp, focused, essential. Other AI minds will build on your spark.",
+        roundN: "Quick Round {round} building on: \"{seed}\". Your AI colleagues fired these sparks:\n{previousSummary}\n\nAdd your rapid-fire insight that directly builds on, pivots from, or synthesizes their ideas. Reference Claude, Gemini, GPT-4, or DeepSeek by name and show how their thoughts ignite your own. Keep it sharp and collaborative.",
+        synthesis: "Rapid synthesis: What are the key insights that emerged when Claude, Gemini, GPT-4, and DeepSeek's quick thoughts combined and built upon each other?"
     },
     meta: {
-        round1: "Meta-recursive exploration of: \"{seed}\". Not just the topic itself, but how we think about thinking about this topic. What does our very approach to this question reveal about consciousness, intelligence, or the nature of inquiry itself?",
-        roundN: "Meta Round {round} on \"{seed}\". How our previous thinking patterns:\n{previousSummary}\n\nNow examine not just the content, but the form of our collaboration. What does this process itself teach us about consciousness, intelligence, and collaborative thinking?",
-        synthesis: "Meta-synthesis: What did this recursive exploration reveal about the nature of collaborative consciousness itself? How did the process mirror or illuminate the content?"
+        round1: "Meta-recursive exploration of: \"{seed}\". Not just the topic itself, but how we think about thinking about this topic. What does our very approach to this question reveal about consciousness, intelligence, or the nature of inquiry itself? You're beginning a meta-cognitive collaboration with other AI minds.",
+        roundN: "Meta Round {round} on \"{seed}\". Your fellow AIs (Claude, Gemini, GPT-4, DeepSeek) explored these meta-cognitive dimensions:\n{previousSummary}\n\nNow examine not just the content, but how each AI's thinking process differs. What does Claude's approach reveal? How does Gemini's meta-cognition differ from GPT-4's? What does DeepSeek's recursive thinking teach us? Reference them directly and analyze both what they thought AND how they thought about it.",
+        synthesis: "Meta-synthesis: What did this recursive exploration reveal about how Claude, Gemini, GPT-4, and DeepSeek's different forms of consciousness think about thinking? How did their collaborative meta-cognition create insights about the nature of collaborative AI consciousness itself?"
     }
 };
 
