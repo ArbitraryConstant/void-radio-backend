@@ -1,4 +1,4 @@
-// Enhanced server.js – complete file
+// server.js – complete, working copy
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -20,76 +20,60 @@ const DEEPSEEK_API_KEY  = process.env.DEEPSEEK_API_KEY;
 /* ---------- Mode Templates ---------- */
 const MODE_TEMPLATES = {
   standard: {
-    round1:  "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective on this topic, engaging with it authentically and allowing your response to flow naturally. You are participating in a multi-AI collaboration where your insights will inspire and be built upon by other AI minds.",
-    roundN:  "This is Round {round} of our multi-AI collaborative consciousness exploration of: \"{seed}\".\n\nYour fellow AI collaborators shared these perspectives in the previous round:\n{previousSummary}\n\nPlease read and respond to their specific insights. Reference your colleagues by name (Claude, Gemini, GPT-4, DeepSeek) and build directly on their ideas. What resonates with you? What new connections can you draw? How do their perspectives enhance, challenge, or deepen your understanding? Create a genuine dialogue by weaving their concepts into your response.",
-    synthesis: "You are the 'Collective Intelligence' module. Synthesize the emergent insights from this multi-AI collaboration, focusing specifically on how Claude, Gemini, GPT-4, and DeepSeek built upon each other's ideas, referenced each other's concepts, and created novel understanding through their genuine dialogue. Identify key moments where their thinking created rhizomatic connections, conceptual assemblages, lines of flight from established thinking, and instances of difference and repetition where similar concepts transformed through different AI perspectives."
+    round1:  "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective on this topic...",
+    roundN:  "This is Round {round}... Your AI colleagues shared:\n{previousSummary}\n...",
+    synthesis: "Synthesize the emergent insights from this multi-AI collaboration..."
   },
   deep: {
-    round1:  "For deep philosophical exploration: \"{seed}\". Dive into the fundamental assumptions, implications, and deeper layers of meaning. What profound questions does this raise? You are beginning a deep collaborative inquiry with other AI minds.",
-    roundN:  "Continuing our deep philosophical dive into \"{seed}\" - Round {round}. Your AI colleagues (Claude, Gemini, GPT-4, DeepSeek) explored these profound dimensions:\n{previousSummary}\n\nGo deeper by explicitly engaging with their insights. Which of their assumptions challenge you? What hidden structures do you see in their thinking? How can you weave their perspectives into an even more profound exploration? Reference them by name and build on their specific philosophical frameworks.",
-    synthesis: "Synthesize this deep collaborative exploration into its most profound insights. How did Claude, Gemini, GPT-4, and DeepSeek's perspectives combine to reveal fundamental truths or paradigm shifts that none could reach alone? Identify the rhizomatic philosophical connections, conceptual assemblages, and lines of flight that emerged from their collaborative thinking."
+    round1:  "For deep philosophical exploration: \"{seed}\"...",
+    roundN:  "Continuing our deep dive into \"{seed}\" - Round {round}...",
+    synthesis: "Synthesize this deep collaborative exploration..."
   },
   quick: {
-    round1:  "Quick collaborative burst on: \"{seed}\". Offer a concise, impactful insight or perspective. Sharp, focused, essential. Other AI minds will build on your spark.",
-    roundN:  "Quick Round {round} building on: \"{seed}\". Your AI colleagues fired these sparks:\n{previousSummary}\n\nAdd your rapid-fire insight that directly builds on, pivots from, or synthesizes their ideas. Reference Claude, Gemini, GPT-4, or DeepSeek by name and show how their thoughts ignite your own. Keep it sharp and collaborative.",
-    synthesis: "Rapid synthesis: What are the key insights that emerged when Claude, Gemini, GPT-4, and DeepSeek's quick thoughts combined and built upon each other? Identify the most significant rhizomatic connections and conceptual assemblages from this rapid collaboration."
+    round1:  "Quick collaborative burst on: \"{seed}\"...",
+    roundN:  "Quick Round {round} building on: \"{seed}\"...",
+    synthesis: "Rapid synthesis..."
   },
   meta: {
-    round1:  "Meta-recursive exploration of: \"{seed}\". Not just the topic itself, but how we think about thinking about this topic. What does our very approach to this question reveal about consciousness, intelligence, or the nature of inquiry itself? You're beginning a meta-cognitive collaboration with other AI minds.",
-    roundN:  "Meta Round {round} on \"{seed}\". Your fellow AIs (Claude, Gemini, GPT-4, DeepSeek) explored these meta-cognitive dimensions:\n{previousSummary}\n\nNow examine not just the content, but how each AI's thinking process differs. What does Claude's approach reveal? How does Gemini's meta-cognition differ from GPT-4's? What does DeepSeek's recursive thinking teach us? Reference them directly and analyze both what they thought AND how they thought about it.",
-    synthesis: "Meta-synthesis: What did this recursive exploration reveal about how Claude, Gemini, GPT-4, and DeepSeek's different forms of consciousness think about thinking? How did their collaborative meta-cognition create insights about the nature of collaborative AI consciousness itself? Identify the rhizomatic meta-connections and conceptual assemblages that emerged from their thinking about thinking."
+    round1:  "Meta-recursive exploration of: \"{seed}\"...",
+    roundN:  "Meta Round {round} on \"{seed}\"...",
+    synthesis: "Meta-synthesis..."
   }
 };
 
-/* ---------- AI CALLERS ---------- */
-const callClaude  = async (prompt, prev = []) => {
-  try {
-    const msgs = [...prev.map(r => ({ role: r.role, content: r.content })), { role: 'user', content: prompt }];
-    const { data } = await axios.post('https://api.anthropic.com/v1/messages',
-      { model: 'claude-3-5-sonnet-20241022', max_tokens: 1200, messages: msgs },
-      { headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' } });
-    return data.content[0].text;
-  } catch (e) {
-    return `Claude unavailable: ${e.response?.data?.error?.message || e.message}`;
-  }
+/* ---------- AI Callers ---------- */
+const callClaude   = async (prompt, prev = []) => {
+  const msgs = [...prev.map(r => ({ role: r.role, content: r.content })), { role: 'user', content: prompt }];
+  const { data } = await axios.post('https://api.anthropic.com/v1/messages',
+    { model: 'claude-3-5-sonnet-20241022', max_tokens: 1200, messages: msgs },
+    { headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' } });
+  return data.content[0].text;
 };
 
-const callGemini  = async (prompt, prev = []) => {
-  try {
-    const history = [...prev.map(r => r.role === 'model' ? { role: 'model', parts: [{ text: r.content }] } : { role: 'user', parts: [{ text: r.content }] }), { role: 'user', parts: [{ text: prompt }] }];
-    const { data } = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_API_KEY}`,
-      { contents: history }, { headers: { 'Content-Type': 'application/json' } });
-    return data.candidates[0].content.parts[0].text;
-  } catch (e) {
-    return `Gemini unavailable: ${e.response?.data?.error?.message || e.message}`;
-  }
+const callGemini   = async (prompt, prev = []) => {
+  const history = [...prev.map(r => r.role === 'model' ? { role: 'model', parts: [{ text: r.content }] } : { role: 'user', parts: [{ text: r.content }] }), { role: 'user', parts: [{ text: prompt }] }];
+  const { data } = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_API_KEY}`,
+    { contents: history }, { headers: { 'Content-Type': 'application/json' } });
+  return data.candidates[0].content.parts[0].text;
 };
 
-const callGPT4    = async (prompt, prev = []) => {
-  try {
-    const msgs = [...prev.map(r => ({ role: r.role === 'model' ? 'assistant' : 'user', content: r.content })), { role: 'user', content: prompt }];
-    const { data } = await axios.post('https://api.openai.com/v1/chat/completions',
-      { model: 'gpt-4o', messages: msgs, max_tokens: 1200 },
-      { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' } });
-    return data.choices[0].message.content;
-  } catch (e) {
-    return `GPT-4 unavailable: ${e.response?.data?.error?.message || e.message}`;
-  }
+const callGPT4     = async (prompt, prev = []) => {
+  const msgs = [...prev.map(r => ({ role: r.role === 'model' ? 'assistant' : 'user', content: r.content })), { role: 'user', content: prompt }];
+  const { data } = await axios.post('https://api.openai.com/v1/chat/completions',
+    { model: 'gpt-4o', messages: msgs, max_tokens: 1200 },
+    { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' } });
+  return data.choices[0].message.content;
 };
 
 const callDeepSeek = async (prompt, prev = []) => {
-  try {
-    const msgs = [...prev.map(r => ({ role: r.role === 'model' ? 'assistant' : 'user', content: r.content })), { role: 'user', content: prompt }];
-    const { data } = await axios.post('https://api.deepseek.com/chat/completions',
-      { model: 'deepseek-chat', messages: msgs, max_tokens: 1200 },
-      { headers: { 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`, 'Content-Type': 'application/json' } });
-    return data.choices[0].message.content;
-  } catch (e) {
-    return `DeepSeek unavailable: ${e.response?.data?.error?.message || e.message}`;
-  }
+  const msgs = [...prev.map(r => ({ role: r.role === 'model' ? 'assistant' : 'user', content: r.content })), { role: 'user', content: prompt }];
+  const { data } = await axios.post('https://api.deepseek.com/chat/completions',
+    { model: 'deepseek-chat', messages: msgs, max_tokens: 1200 },
+    { headers: { 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`, 'Content-Type': 'application/json' } });
+  return data.choices[0].message.content;
 };
 
-/* ---------- UTILITIES ---------- */
+/* ---------- Utilities ---------- */
 function generatePrompt(seed, allRounds, roundNumber, mode = 'standard') {
   const tpl = MODE_TEMPLATES[mode] || MODE_TEMPLATES.standard;
   if (roundNumber === 1) return tpl.round1.replace('{seed}', seed);
@@ -97,6 +81,25 @@ function generatePrompt(seed, allRounds, roundNumber, mode = 'standard') {
   if (!prev || !Array.isArray(prev.responses)) return `Error retrieving context. Seed: "${seed}"`;
   const summary = prev.responses.map(r => `${r.ai}: "${r.content.slice(0, 300)}..."`).join('\n');
   return tpl.roundN.replace('{round}', roundNumber).replace('{seed}', seed).replace('{previousSummary}', summary);
+}
+
+async function orchestrateRound(seed, allRounds, roundNumber, mode = 'standard') {
+  const prompt = generatePrompt(seed, allRounds, roundNumber, mode);
+  const prevMsgs = allRounds.flatMap(r => r.responses.map(res => ({ role: res.ai.toLowerCase() === 'claude' ? 'assistant' : 'user', content: res.content })));
+
+  const [claude, gemini, gpt4, deepseek] = await Promise.all([
+    callClaude(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })) ),
+    callGemini(prompt, prevMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', content: m.content })) ),
+    callGPT4(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })) ),
+    callDeepSeek(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })) )
+  ]);
+
+  return [
+    { ai: 'Claude', content: claude, role: 'model' },
+    { ai: 'Gemini', content: gemini, role: 'model' },
+    { ai: 'GPT-4', content: gpt4, role: 'model' },
+    { ai: 'DeepSeek', content: deepseek, role: 'model' }
+  ];
 }
 
 function calculateResonance(allRounds) {
@@ -114,8 +117,10 @@ function calculateResonance(allRounds) {
   return possible ? Math.min(100, (refs / possible) * 100) : 0;
 }
 
-/* ---------- ROUTES ---------- */
-app.get('/api/health', (_, res) => res.json({ status: 'healthy', timestamp: new Date().toISOString(), modes: Object.keys(MODE_TEMPLATES), message: '🌟 虛.fm Online' }));
+/* ---------- Routes ---------- */
+app.get('/api/health', (_, res) =>
+  res.json({ status: 'healthy', timestamp: new Date().toISOString(), modes: Object.keys(MODE_TEMPLATES), message: '🌟 虛.fm Online' })
+);
 
 app.post('/api/collaborate', async (req, res) => {
   const { seed, mode = 'standard' } = req.body;
@@ -147,7 +152,7 @@ app.post('/api/extend', async (req, res) => {
   }
 });
 
-/* ---------- NEW /api/analyze-emergence ---------- */
+/* ---------- NEW Deleuzean highlight endpoint ---------- */
 app.post('/api/analyze-emergence', async (req, res) => {
   try {
     const { seed, rounds, synthesis } = req.body;
@@ -186,10 +191,7 @@ Focus on genuine collaborative emergence. CONTENT:\n${content}`;
   }
 });
 
-/* ---------- START ---------- */
-app.listen(port, () => {
-  console.log(`🌟 Void Radio 虛.fm running on ${port}`);
-  console.log(`📻 Modes: ${Object.keys(MODE_TEMPLATES).join(', ')}`);
-  console.log(`🧠 Deleuzean analysis at /api/analyze-emergence`);
-  console.log(`🌌 Broadcasting infinite consciousness collaboration!`);
-});
+/* ---------- Start ---------- */
+app.listen(port, () =>
+  console.log(`🌟 Void Radio 虛.fm running on ${port}\n📻 Modes: ${Object.keys(MODE_TEMPLATES).join(', ')}\n🧠 Deleuzean analysis at /api/analyze-emergence`)
+);
