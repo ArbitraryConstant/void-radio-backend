@@ -1,4 +1,4 @@
-// server.js – complete, working copy
+// server.js – complete & crash-free
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -20,13 +20,13 @@ const DEEPSEEK_API_KEY  = process.env.DEEPSEEK_API_KEY;
 /* ---------- Mode Templates ---------- */
 const MODE_TEMPLATES = {
   standard: {
-    round1:  "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective on this topic...",
+    round1:  "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective...",
     roundN:  "This is Round {round}... Your AI colleagues shared:\n{previousSummary}\n...",
     synthesis: "Synthesize the emergent insights from this multi-AI collaboration..."
   },
   deep: {
     round1:  "For deep philosophical exploration: \"{seed}\"...",
-    roundN:  "Continuing our deep dive into \"{seed}\" - Round {round}...",
+    roundN:  "Continuing our deep philosophical dive into \"{seed}\" - Round {round}...",
     synthesis: "Synthesize this deep collaborative exploration..."
   },
   quick: {
@@ -86,14 +86,12 @@ function generatePrompt(seed, allRounds, roundNumber, mode = 'standard') {
 async function orchestrateRound(seed, allRounds, roundNumber, mode = 'standard') {
   const prompt = generatePrompt(seed, allRounds, roundNumber, mode);
   const prevMsgs = allRounds.flatMap(r => r.responses.map(res => ({ role: res.ai.toLowerCase() === 'claude' ? 'assistant' : 'user', content: res.content })));
-
   const [claude, gemini, gpt4, deepseek] = await Promise.all([
-    callClaude(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })) ),
-    callGemini(prompt, prevMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', content: m.content })) ),
-    callGPT4(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })) ),
-    callDeepSeek(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })) )
+    callClaude(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content }))),
+    callGemini(prompt, prevMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', content: m.content }))),
+    callGPT4(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content }))),
+    callDeepSeek(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })))
   ]);
-
   return [
     { ai: 'Claude', content: claude, role: 'model' },
     { ai: 'Gemini', content: gemini, role: 'model' },
@@ -102,19 +100,16 @@ async function orchestrateRound(seed, allRounds, roundNumber, mode = 'standard')
   ];
 }
 
-function calculateResonance(allRounds) {
-  if (!allRounds || allRounds.length < 2) return 0;
-  let refs = 0, possible = 0;
-  const terms = ['claude','gemini','gpt-4','deepseek','building on','resonates','weaving','synthesis','together'];
-  allRounds.forEach((round, idx) => {
-    if (idx === 0) return;
-    round.responses.forEach(res => {
-      possible += allRounds[idx - 1].responses.length;
-      const txt = res.content.toLowerCase();
-      terms.forEach(t => { if (txt.includes(t)) refs++; });
-    });
+async function generateSynthesis(seed, allRounds, mode = 'standard') {
+  const tpl = MODE_TEMPLATES[mode] || MODE_TEMPLATES.standard;
+  let summary = '';
+  allRounds.forEach((round) => {
+    summary += `--- Round ${round.round} ---\n`;
+    round.responses.forEach(res => summary += `${res.ai}: "${res.content}"\n`);
+    summary += '\n';
   });
-  return possible ? Math.min(100, (refs / possible) * 100) : 0;
+  const prompt = tpl.synthesis + `\n\nOriginal seed: "${seed}"\n\nCollaboration:\n${summary}`;
+  return callClaude(prompt, []);
 }
 
 /* ---------- Routes ---------- */
@@ -157,25 +152,21 @@ app.post('/api/analyze-emergence', async (req, res) => {
   try {
     const { seed, rounds, synthesis } = req.body;
     if (!rounds || rounds.length < 1) return res.json([]);
-
     const content = [
-      `DELEUZEAN COLLABORATIVE ANALYSIS\nSeed: "${seed}"\n`,
+      `DELEUZEAN COLLAB ANALYSIS\nSeed: "${seed}"\n`,
       ...rounds.map(r => `=== R${r.round} ===\n${r.responses.map(rp => `--- ${rp.ai} ---\n${rp.content}`).join('\n')}\n`),
       synthesis ? `=== SYNTHESIS ===\n${synthesis.content}\n` : ''
     ].join('');
-
     const prompt = `Return JSON array (max 12 items) of highlights:
 [
   {"text":"phrase","type":"rhizomatic|assemblage|flight|mutation|difference","intensity":"low|medium|high","significance":"brief"}
 ]
-Focus on genuine collaborative emergence. CONTENT:\n${content}`;
-
+CONTENT:\n${content}`;
     const { data } = await axios.post(
       'https://api.anthropic.com/v1/messages',
       { model: 'claude-3-5-sonnet-20241022', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] },
       { headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' } }
     );
-
     const raw = data.content[0].text;
     const jsonMatch = raw.match(/\[[\s\S]*\]/);
     const highlights = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
