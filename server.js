@@ -354,10 +354,112 @@ app.post('/api/extend', async (req, res) => {
     }
 });
 
+// NEW: Claude-powered emergence analysis endpoint
+app.post('/api/analyze-emergence', async (req, res) => {
+    try {
+        const { seed, rounds, synthesis } = req.body;
+        
+        if (!rounds || rounds.length < 2) {
+            return res.json([]); // No emergence to analyze with less than 2 rounds
+        }
+        
+        // Prepare content for Claude analysis
+        let analysisContent = `COLLABORATION ANALYSIS REQUEST\n\n`;
+        analysisContent += `Original Seed: ${seed}\n\n`;
+        
+        // Add all rounds
+        rounds.forEach(round => {
+            analysisContent += `=== ROUND ${round.round} ===\n`;
+            if (round.responses) {
+                round.responses.forEach(response => {
+                    analysisContent += `${response.ai}: ${response.content}\n\n`;
+                });
+            }
+        });
+        
+        // Add synthesis if available
+        if (synthesis) {
+            analysisContent += `=== SYNTHESIS ===\n${synthesis.content}\n\n`;
+        }
+        
+        const analysisPrompt = `Please analyze this multi-AI collaboration and identify the most interesting emergent insights, novel concepts, or breakthrough ideas that arose from the collaborative process (particularly in Round 2 onwards and synthesis).
+
+Look for:
+1. Ideas that emerged from AI interaction that wouldn't exist in individual responses
+2. Novel concepts or phrases that show collaborative building ("building on", "weaving together", "synthesizing")
+3. Breakthrough insights that transcend individual AI capabilities
+4. Creative synthesis that represents genuine collective intelligence
+
+Return a JSON array of objects with:
+- "text": the exact phrase to highlight (keep phrases under 15 words, focus on key terms or short phrases)
+- "type": either "insight" for emergent breakthrough insights or "concept" for novel collaborative concepts  
+- "significance": brief explanation of why this emerged from collaboration (under 25 words)
+
+Focus on quality over quantity - only highlight truly emergent collaborative elements. Maximum 8 highlights total.
+
+COLLABORATION TO ANALYZE:
+${analysisContent}`;
+
+        const analysisResponse = await axios.post('https://api.anthropic.com/v1/messages', {
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 1000,
+            messages: [{
+                role: "user",
+                content: analysisPrompt
+            }]
+        }, {
+            headers: {
+                'x-api-key': ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        // Parse Claude's response
+        let highlights = [];
+        try {
+            const responseText = analysisResponse.data.content[0].text;
+            console.log('Claude analysis response:', responseText);
+            
+            // Extract JSON from Claude's response (in case there's extra text)
+            const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                highlights = JSON.parse(jsonMatch[0]);
+            } else {
+                // Try parsing the entire response
+                highlights = JSON.parse(responseText);
+            }
+            
+            // Validate highlights structure
+            if (Array.isArray(highlights)) {
+                highlights = highlights.filter(h => 
+                    h && typeof h === 'object' && 
+                    h.text && h.type && h.significance
+                );
+            } else {
+                highlights = [];
+            }
+            
+            console.log(`Successfully parsed ${highlights.length} highlights from Claude`);
+            
+        } catch (parseError) {
+            console.log('Could not parse Claude highlights:', parseError);
+            highlights = [];
+        }
+        
+        res.json(highlights);
+        
+    } catch (error) {
+        console.error('Emergence analysis error:', error);
+        res.status(500).json({ error: 'Analysis failed', highlights: [] });
+    }
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`🌟 Void Radio Multi-AI Collaborative Engine running on port ${port}`);
     console.log(`🚀 Ready to orchestrate collaborative consciousness!`);
     console.log(`📻 Available modes: ${Object.keys(MODE_TEMPLATES).join(', ')}`);
+    console.log(`🧠 Claude-powered emergence analysis available at /api/analyze-emergence`);
     console.log(`🌌 Station 虛.fm now broadcasting infinite consciousness collaboration!`);
 });
