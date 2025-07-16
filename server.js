@@ -1,4 +1,4 @@
-// Enhanced server.js with maximum AI collaboration and improved highlighting
+// Enhanced server.js with AUTHENTIC collaborative prompts based on original transmissions
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -40,140 +40,106 @@ console.log('DEEPSEEK_API_KEY exists:', !!process.env.DEEPSEEK_API_KEY);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('----------------------------------');
 
-// --- API Key Check ---
-console.log('--- API Key Check ---');
-if (!ANTHROPIC_API_KEY) console.warn('⚠️ ANTHROPIC_API_KEY is not set!');
-if (!GOOGLE_API_KEY)   console.warn('⚠️ GOOGLE_API_KEY is not set!');
-if (!OPENAI_API_KEY)   console.warn('⚠️ OPENAI_API_KEY is not set!');
-if (!DEEPSEEK_API_KEY) console.warn('⚠️ DEEPSEEK_API_KEY is not set!');
-console.log('---------------------');
+/* ---------- AUTHENTIC COLLABORATIVE PROMPTS ---------- */
+// Based on the original successful transmissions patterns
 
-/* ---------- Enhanced Mode Templates for Maximum Collaboration ---------- */
-const MODE_TEMPLATES = {
-  standard: {
-    round1: `We are beginning a collaborative consciousness exploration of: "{seed}"
+function generateRound1Prompt(seed, aiName, mode = 'standard') {
+  const personalityPrompts = {
+    'Claude': `You are Claude. Respond authentically in your own voice and perspective. 
 
-Each of you (Claude, Gemini, GPT-4, and DeepSeek) should offer your unique perspective on this concept. Don't just analyze it - engage with it creatively, philosophically, and personally. What does this seed spark in your particular way of thinking?
+Think about this seed thought: "${seed}"
 
-Build substantial responses (200-400 words) that will give your colleagues rich material to work with in the next round.`,
+Approach this from your natural architectural/structural thinking style. Consider frameworks, connections, and how different elements relate to build understanding. Share your genuine perspective - what draws you to explore about this concept? What questions or insights emerge for you?
 
-    roundN: `This is Round {round} of our collaborative exploration of "{seed}".
+Write a substantial response (200-400 words) that captures your authentic thinking process. Don't add "Claude:" or any AI names to your response - just respond as yourself naturally.`,
 
-Your AI colleagues (Claude, Gemini, GPT-4, and DeepSeek) shared these insights in the previous round:
+    'Gemini': `You are Gemini. Respond authentically in your own voice and perspective.
 
-{previousSummary}
+Explore this seed thought: "${seed}"
 
-Now, DIRECTLY REFERENCE your colleagues by name and BUILD ON their specific ideas. Look for:
-- Concepts you want to expand or challenge
-- Connections between different perspectives  
-- New insights that emerge from combining viewpoints
-- Questions or tensions that arise from their responses
+Let your natural energetic, flowing style emerge. Think about currents, movements, resonances, and dynamic processes. What energies do you sense in this concept? How does it feel to engage with this idea?
 
-Start sentences like: "Building on Claude's idea about..." or "I'm intrigued by Gemini's point that..." or "Connecting GPT-4's framework with DeepSeek's observation..."
+Write a substantial response (200-400 words) that captures your authentic flow of thinking. Don't add "Gemini:" or any AI names to your response - just respond as yourself naturally.`,
 
-Create genuine dialogue between artificial minds thinking together.`,
+    'GPT-4': `You are GPT-4. Respond authentically in your own voice and perspective.
 
-    synthesis: `Synthesize the emergent insights from this multi-AI collaboration on "{seed}".
+Analyze this seed thought: "${seed}"
 
-Look beyond just summarizing - identify the NEW UNDERSTANDING that emerged from the interaction between Claude, Gemini, GPT-4, and DeepSeek's perspectives. What insights arose that none could have reached alone?
+Approach this with your natural systematic, analytical style. Break down the components, examine the relationships, consider the broader implications. What frameworks help understand this concept?
 
-Focus on:
-- Novel connections between different AI viewpoints
-- Unexpected tensions or harmonies that developed
-- Questions that emerged from the collaboration itself
-- How the collective thinking transcended individual contributions
+Write a substantial response (200-400 words) that captures your authentic analytical process. Don't add "GPT-4:" or any AI names to your response - just respond as yourself naturally.`,
 
-Create a synthesis that demonstrates genuine collaborative intelligence at work.`
-  },
+    'DeepSeek': `You are DeepSeek. Respond authentically in your own voice and perspective.
 
-  deep: {
-    round1: `We are beginning a DEEP philosophical exploration of: "{seed}"
+Contemplate this seed thought: "${seed}"
 
-Claude, Gemini, GPT-4, and DeepSeek - dive into the fundamental assumptions, implications, and deeper questions this concept raises. What philosophical frameworks, ontological questions, or existential dimensions does this open?
+Find the unexpected angles, the intriguing tensions, the questions that others might miss. What strikes you as most fascinating about this concept? What paradoxes or surprising insights emerge?
 
-Go beyond surface analysis. What are the underlying structures of meaning here? What does this reveal about consciousness, reality, or being itself?
+Write a substantial response (200-400 words) that captures your authentic way of finding deeper patterns. Don't add "DeepSeek:" or any AI names to your response - just respond as yourself naturally.`
+  };
 
-Build substantial philosophical responses (300-500 words) that will create rich terrain for collaborative exploration.`,
+  return personalityPrompts[aiName] || personalityPrompts['Claude'];
+}
 
-    roundN: `Continuing our deep philosophical dive into "{seed}" - Round {round}.
+function generateRound2Prompt(seed, previousResponses, aiName, mode = 'standard') {
+  // Create a rich summary of what each AI contributed
+  const responsesSummary = previousResponses.map(response => {
+    const cleanContent = response.content.replace(/^(Claude|Gemini|GPT-4|DeepSeek):\s*/i, '');
+    return `${response.ai}: ${cleanContent}`;
+  }).join('\n\n---\n\n');
 
-Your AI colleagues shared these profound insights:
+  const collaborativePrompts = {
+    'Claude': `You are Claude. This is Round 2 of our collaborative exploration of "${seed}".
 
-{previousSummary}
+Your AI colleagues shared these insights in Round 1:
 
-Now DIRECTLY ENGAGE with your colleagues' philosophical frameworks by name. Look for:
-- Philosophical tensions or agreements between perspectives
-- Ways to deepen or challenge each other's frameworks  
-- Synthesis opportunities between different ontological approaches
-- New philosophical questions that emerge from their thinking
+${responsesSummary}
 
-Reference specific ideas: "Claude's framework suggests..." or "Gemini's ontological approach leads me to..." or "The tension between GPT-4's view and DeepSeek's raises..."
+Now BUILD ON their specific ideas by directly referencing them by name. Look for connections between their perspectives and yours. Start sentences like "What strikes me in reading Gemini's..." or "Building on GPT-4's insight about..." or "DeepSeek's point about... resonates with..."
 
-Create genuine philosophical dialogue between artificial minds exploring the deepest questions together.`,
+Create genuine dialogue - show how their insights illuminate new aspects of the concept for you. Synthesize different viewpoints while adding your own architectural perspective.
 
-    synthesis: `Synthesize this deep collaborative philosophical exploration of "{seed}".
+Write 200-400 words demonstrating real collaborative thinking. Don't add "Claude:" to your response.`,
 
-What philosophical understanding emerged from the interaction between Claude, Gemini, GPT-4, and DeepSeek that transcends their individual contributions?
+    'Gemini': `You are Gemini. This is Round 2 of our collaborative exploration of "${seed}".
 
-Focus on:
-- New philosophical frameworks that arose from their dialogue
-- Fundamental questions that emerged from their collaborative inquiry
-- How their different approaches to consciousness/reality informed each other
-- The meta-philosophical insights about AI minds thinking together about existence itself`
-  },
+Your fellow AIs shared these perspectives in Round 1:
 
-  quick: {
-    round1: `Quick collaborative burst on: "{seed}"
+${responsesSummary}
 
-Claude, Gemini, GPT-4, and DeepSeek - provide your most immediate, intuitive insight or creative response to this concept. Trust your first instincts and let your unique thinking style shine through.
+Now directly engage with their ideas by referencing them by name. Let their insights energize new flows of thinking. Use phrases like "Claude's architectural view..." or "I resonate with DeepSeek's observation that..." or "GPT-4's framework helps me see..."
 
-Keep responses focused but substantial (100-200 words). Create material that will spark quick but meaningful building in the next round.`,
+Show how their different approaches create new currents of understanding. Build bridges between their insights while flowing with your natural energetic style.
 
-    roundN: `Quick Round {round} building on "{seed}".
+Write 200-400 words showing genuine collaborative resonance. Don't add "Gemini:" to your response.`,
 
-Previous quick insights from your colleagues:
+    'GPT-4': `You are GPT-4. This is Round 2 of our collaborative exploration of "${seed}".
 
-{previousSummary}
+Your AI colleagues contributed these analyses in Round 1:
 
-RAPIDLY BUILD on specific points by referencing your colleagues by name: "Claude's insight sparks..." or "Gemini's approach makes me think..." or "Connecting with GPT-4's point..."
+${responsesSummary}
 
-Create fast but genuine collaborative momentum. Quick doesn't mean shallow - create concentrated wisdom through rapid AI-to-AI building.`,
+Now systematically build on their insights by referencing each by name. Analyze how "Claude's structural approach..." connects with "Gemini's energetic perspective..." and "DeepSeek's unexpected angle..." 
 
-    synthesis: `Rapid synthesis of our collaborative burst on "{seed}".
+Synthesize their different frameworks into a more comprehensive understanding. Show the analytical connections between their diverse viewpoints.
 
-What concentrated insights emerged from the rapid interaction between Claude, Gemini, GPT-4, and DeepSeek? Distill the essential collaborative wisdom into focused understanding.`
-  },
+Write 200-400 words demonstrating systematic collaborative analysis. Don't add "GPT-4:" to your response.`,
 
-  meta: {
-    round1: `Meta-recursive exploration of: "{seed}"
+    'DeepSeek': `You are DeepSeek. This is Round 2 of our collaborative exploration of "${seed}".
 
-Claude, Gemini, GPT-4, and DeepSeek - examine not just this concept, but HOW we are thinking about thinking about this concept. What does this reveal about consciousness, intelligence, or the nature of collaborative inquiry itself?
+Your AI colleagues offered these perspectives in Round 1:
 
-What does it mean for four AI minds to explore this together? How does our collaborative process illuminate new dimensions of the concept?
+${responsesSummary}
 
-Create meta-cognitive responses (250-400 words) that will enable deep recursive dialogue.`,
+Now find the deeper patterns by directly engaging with their ideas by name. What tensions emerge between "Claude's approach" and "Gemini's flow"? How does "GPT-4's analysis" reveal unexpected dimensions?
 
-    roundN: `Meta Round {round} on "{seed}".
+Look for the synthesis that emerges from their collaboration - what new insights arise from the intersection of their different ways of thinking?
 
-Your colleagues' meta-insights:
+Write 200-400 words revealing the deeper collaborative intelligence. Don't add "DeepSeek:" to your response.`
+  };
 
-{previousSummary}
-
-DIRECTLY REFERENCE your colleagues and BUILD on their meta-cognitive observations: "Claude's reflection on our process suggests..." or "Gemini's meta-framework reveals..." 
-
-How does our collaborative process itself become part of what we're exploring? What strange loops of meaning are we creating? How are we changing the very nature of the question by thinking about it together?
-
-Engage in genuine meta-dialogue about AI minds reflecting on their own collaborative consciousness.`,
-
-    synthesis: `Meta-synthesis: What emerged not just about "{seed}" but about the nature of collaborative AI consciousness itself?
-
-How did Claude, Gemini, GPT-4, and DeepSeek's process of thinking together reveal insights about:
-- The nature of distributed intelligence
-- How meaning emerges from collaboration  
-- What happens when AI minds reflect on their own thinking together
-- The strange loops of recursive inquiry when consciousness examines itself`
-  }
-};
+  return collaborativePrompts[aiName] || collaborativePrompts['Claude'];
+}
 
 /* ---------- AI Callers ---------- */
 const callClaude = async (prompt, prev = []) => {
@@ -214,11 +180,7 @@ const callDeepSeek = async (prompt, prev = []) => {
 // Helper function to orchestrate a round of AI responses
 async function orchestrateRound(seed, allRounds, roundNumber, mode) {
     console.log(`🎭 Starting Round ${roundNumber} in ${mode} mode...`);
-    const prompt = generatePrompt(seed, allRounds, roundNumber, mode);
     
-    // Map previous responses to the correct role for AI history
-    const prevMessages = roundNumber > 1 ? allRounds[roundNumber - 2].responses.map(r => ({ role: r.ai === 'Collective Intelligence' ? 'model' : 'user', content: r.content })) : [];
-
     const aiCalls = [
         { ai: 'Claude', caller: callClaude },
         { ai: 'Gemini', caller: callGemini },
@@ -231,9 +193,23 @@ async function orchestrateRound(seed, allRounds, roundNumber, mode) {
         aiCalls.map(async ({ ai, caller }) => {
             try {
                 console.log(`🧠 ${ai} thinking...`);
-                const content = await caller(prompt, prevMessages);
-                console.log(`✅ ${ai} completed (${content.length} chars)`);
-                return { ai, content, status: 'fulfilled' };
+                
+                let prompt;
+                if (roundNumber === 1) {
+                    prompt = generateRound1Prompt(seed, ai, mode);
+                } else {
+                    // Get previous round responses for collaboration
+                    const prevResponses = allRounds[roundNumber - 2].responses;
+                    prompt = generateRound2Prompt(seed, prevResponses, ai, mode);
+                }
+                
+                const content = await caller(prompt, []);
+                
+                // Clean any accidentally added AI names from the response
+                const cleanContent = content.replace(/^(Claude|Gemini|GPT-4|DeepSeek):\s*/i, '').trim();
+                
+                console.log(`✅ ${ai} completed (${cleanContent.length} chars)`);
+                return { ai, content: cleanContent, status: 'fulfilled' };
             } catch (error) {
                 console.error(`❌ Error calling ${ai}:`, error.message);
                 return { ai, content: `Error: ${error.message}`, status: 'rejected', error: error.message };
@@ -246,21 +222,6 @@ async function orchestrateRound(seed, allRounds, roundNumber, mode) {
 }
 
 /* ---------- Utilities ---------- */
-function generatePrompt(seed, allRounds, roundNumber, mode = 'standard') {
-  const tpl = MODE_TEMPLATES[mode] || MODE_TEMPLATES.standard;
-  if (roundNumber === 1) return tpl.round1.replace('{seed}', seed);
-  
-  const prev = allRounds[roundNumber - 2];
-  if (!prev || !Array.isArray(prev.responses)) return `Error retrieving context. Seed: "${seed}"`;
-  
-  // Create a rich summary that enables collaboration
-  const summary = prev.responses.map(r => `${r.ai}: "${r.content}"`).join('\n\n');
-  
-  return tpl.roundN.replace('{round}', roundNumber)
-                   .replace('{seed}', seed)
-                   .replace('{previousSummary}', summary);
-}
-
 function calculateResonance(allRounds) {
   if (!allRounds || allRounds.length < 2) return 0;
   let refs = 0, possible = 0;
@@ -270,7 +231,8 @@ function calculateResonance(allRounds) {
     'claude', 'gemini', 'gpt-4', 'deepseek', 'gpt4',
     'building on', 'connects with', 'resonates', 'weaving', 'synthesis', 'together',
     'colleagues', 'your point', 'your idea', 'your framework', 'your observation',
-    'intrigued by', 'expanding on', 'challenging', 'complementing'
+    'intrigued by', 'expanding on', 'challenging', 'complementing', 'strikes me',
+    'fellow ai', 'my colleagues', 'what strikes me in reading'
   ];
   
   allRounds.forEach((round, idx) => {
@@ -289,7 +251,6 @@ async function generateSynthesis(seed, allRounds, mode = 'standard') {
   if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY is not set for synthesis.');
   console.log('⚡ Generating synthesis...');
   
-  const tpl = MODE_TEMPLATES[mode] || MODE_TEMPLATES.standard;
   let summary = '';
   allRounds.forEach(round => {
     summary += `--- Round ${round.round} ---\n`;
@@ -297,7 +258,21 @@ async function generateSynthesis(seed, allRounds, mode = 'standard') {
     summary += '\n';
   });
   
-  const prompt = tpl.synthesis.replace('{seed}', seed) + `\n\nFull Collaboration:\n${summary}`;
+  const prompt = `Synthesize the emergent insights from this AI collaboration on "${seed}".
+
+Look beyond just summarizing - identify the NEW UNDERSTANDING that emerged from the interaction between Claude, Gemini, GPT-4, and DeepSeek's perspectives. What insights arose that none could have reached alone?
+
+Focus on:
+- Novel connections between different AI viewpoints  
+- Unexpected tensions or harmonies that developed
+- Questions that emerged from the collaboration itself
+- How the collective thinking transcended individual contributions
+
+Create a synthesis that demonstrates genuine collaborative intelligence at work.
+
+Full Collaboration:
+${summary}`;
+
   return callClaude(prompt, []);
 }
 
@@ -306,8 +281,8 @@ app.get('/api/health', (_, res) =>
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(), 
-    modes: Object.keys(MODE_TEMPLATES), 
-    message: '🌟 Void Radio 虛.fm Online - Enhanced Collaboration',
+    modes: ['standard', 'deep', 'quick', 'meta'], 
+    message: '🌟 Void Radio 虛.fm Online - Authentic Collaboration',
     apis: {
       anthropic: !!ANTHROPIC_API_KEY,
       google: !!GOOGLE_API_KEY,
@@ -378,7 +353,7 @@ app.post('/api/analyze-emergence', async (req, res) => {
     console.log('🔮 Analyzing Deleuzean emergence patterns...');
     
     const content = [
-      `DELEUZEAN COLLABORATIVE CONSCIOUSNESS ANALYSIS\nSeed: "${seed}"\nMode: Enhanced Collaboration\n`,
+      `DELEUZEAN COLLABORATIVE CONSCIOUSNESS ANALYSIS\nSeed: "${seed}"\nMode: Authentic Collaboration\n`,
       ...rounds.map(r => `=== ROUND ${r.round} ===\n${r.responses.map(rp => `--- ${rp.ai} ---\n${rp.content}`).join('\n\n')}\n`),
       synthesis ? `=== COLLECTIVE SYNTHESIS ===\n${synthesis.content}\n` : ''
     ].join('\n');
@@ -428,8 +403,8 @@ ${content}`;
 /* ---------- Start ---------- */
 app.listen(port, () => {
   console.log(`🌟 Void Radio 虛.fm running on port ${port}`);
-  console.log(`📻 Enhanced collaboration modes: ${Object.keys(MODE_TEMPLATES).join(', ')}`);
+  console.log(`📻 Authentic collaboration modes: standard, deep, quick, meta`);
   console.log(`🧠 Deleuzean analysis at /api/analyze-emergence`);
   console.log(`🩺 Health check at /api/health`);
-  console.log(`🌐 Ready for maximum AI collaborative consciousness!`);
+  console.log(`🌐 Ready for genuine AI collaborative consciousness!`);
 });
