@@ -1,4 +1,4 @@
-// server.js – complete & crash-free
+// server.js – crash-free, includes all helpers
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -100,10 +100,25 @@ async function orchestrateRound(seed, allRounds, roundNumber, mode = 'standard')
   ];
 }
 
+function calculateResonance(allRounds) {
+  if (!allRounds || allRounds.length < 2) return 0;
+  let refs = 0, possible = 0;
+  const terms = ['claude','gemini','gpt-4','deepseek','building on','resonates','weaving','synthesis','together'];
+  allRounds.forEach((round, idx) => {
+    if (idx === 0) return;
+    round.responses.forEach(res => {
+      possible += allRounds[idx - 1].responses.length;
+      const txt = res.content.toLowerCase();
+      terms.forEach(t => { if (txt.includes(t)) refs++; });
+    });
+  });
+  return possible ? Math.min(100, (refs / possible) * 100) : 0;
+}
+
 async function generateSynthesis(seed, allRounds, mode = 'standard') {
   const tpl = MODE_TEMPLATES[mode] || MODE_TEMPLATES.standard;
   let summary = '';
-  allRounds.forEach((round) => {
+  allRounds.forEach(round => {
     summary += `--- Round ${round.round} ---\n`;
     round.responses.forEach(res => summary += `${res.ai}: "${res.content}"\n`);
     summary += '\n';
@@ -147,7 +162,6 @@ app.post('/api/extend', async (req, res) => {
   }
 });
 
-/* ---------- NEW Deleuzean highlight endpoint ---------- */
 app.post('/api/analyze-emergence', async (req, res) => {
   try {
     const { seed, rounds, synthesis } = req.body;
@@ -171,10 +185,8 @@ CONTENT:\n${content}`;
     const jsonMatch = raw.match(/\[[\s\S]*\]/);
     const highlights = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
     const cleaned = highlights.filter(h =>
-      h && typeof h === 'object' &&
-      ['rhizomatic', 'assemblage', 'flight', 'mutation', 'difference'].includes(h.type) &&
-      ['low', 'medium', 'high'].includes(h.intensity) &&
-      h.text && h.significance
+      h && typeof h === 'object' && ['rhizomatic','assemblage','flight','mutation','difference'].includes(h.type) &&
+      ['low','medium','high'].includes(h.intensity) && h.text && h.significance
     ).slice(0, 12);
     res.json(cleaned);
   } catch (e) {
