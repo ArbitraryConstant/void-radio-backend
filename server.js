@@ -1,4 +1,4 @@
-// server.js – crash-free, includes all helpers
+// server.js – complete, crash-free
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -81,23 +81,6 @@ function generatePrompt(seed, allRounds, roundNumber, mode = 'standard') {
   if (!prev || !Array.isArray(prev.responses)) return `Error retrieving context. Seed: "${seed}"`;
   const summary = prev.responses.map(r => `${r.ai}: "${r.content.slice(0, 300)}..."`).join('\n');
   return tpl.roundN.replace('{round}', roundNumber).replace('{seed}', seed).replace('{previousSummary}', summary);
-}
-
-async function orchestrateRound(seed, allRounds, roundNumber, mode = 'standard') {
-  const prompt = generatePrompt(seed, allRounds, roundNumber, mode);
-  const prevMsgs = allRounds.flatMap(r => r.responses.map(res => ({ role: res.ai.toLowerCase() === 'claude' ? 'assistant' : 'user', content: res.content })));
-  const [claude, gemini, gpt4, deepseek] = await Promise.all([
-    callClaude(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content }))),
-    callGemini(prompt, prevMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', content: m.content }))),
-    callGPT4(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content }))),
-    callDeepSeek(prompt, prevMsgs.map(m => ({ role: m.role, content: m.content })))
-  ]);
-  return [
-    { ai: 'Claude', content: claude, role: 'model' },
-    { ai: 'Gemini', content: gemini, role: 'model' },
-    { ai: 'GPT-4', content: gpt4, role: 'model' },
-    { ai: 'DeepSeek', content: deepseek, role: 'model' }
-  ];
 }
 
 function calculateResonance(allRounds) {
