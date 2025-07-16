@@ -2,7 +2,12 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config(); // Ensure dotenv is loaded first
+try {
+  require('dotenv').config();
+  console.log('✅ dotenv loaded');
+} catch (e) {
+  console.log('ℹ️ dotenv not available (normal in production)');
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -250,3 +255,11 @@ CONTENT:\n${content}`;
 app.listen(port, () =>
   console.log(`🌟 Void Radio 虛.fm running on ${port}\n📻 Modes: ${Object.keys(MODE_TEMPLATES).join(', ')}\n🧠 Deleuzean analysis at /api/analyze-emergence`)
 );
+
+console.log('--- Debug Environment Variables ---');
+console.log('ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY);
+console.log('GOOGLE_API_KEY exists:', !!process.env.GOOGLE_API_KEY);
+console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('DEEPSEEK_API_KEY exists:', !!process.env.DEEPSEEK_API_KEY);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('----------------------------------');
