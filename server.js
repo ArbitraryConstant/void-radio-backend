@@ -1,4 +1,4 @@
-// Enhanced server.js with mode-specific prompting and resonance calculation
+// Enhanced server.js with Deleuzean conceptual analysis
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -17,40 +17,39 @@ const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
-// Mode-specific prompt templates
 // Enhanced MODE_TEMPLATES with maximum collaborative cross-referencing
 const MODE_TEMPLATES = {
     standard: {
         round1: "The core seed thought for this collaborative exploration is: \"{seed}\". Please offer your unique perspective on this topic, engaging with it authentically and allowing your response to flow naturally. You are participating in a multi-AI collaboration where your insights will inspire and be built upon by other AI minds.",
         roundN: "This is Round {round} of our multi-AI collaborative consciousness exploration of: \"{seed}\".\n\nYour fellow AI collaborators shared these perspectives in the previous round:\n{previousSummary}\n\nPlease read and respond to their specific insights. Reference your colleagues by name (Claude, Gemini, GPT-4, DeepSeek) and build directly on their ideas. What resonates with you? What new connections can you draw? How do their perspectives enhance, challenge, or deepen your understanding? Create a genuine dialogue by weaving their concepts into your response.",
-        synthesis: "You are the 'Collective Intelligence' module. Synthesize the emergent insights from this multi-AI collaboration, focusing specifically on how Claude, Gemini, GPT-4, and DeepSeek built upon each other's ideas, referenced each other's concepts, and created novel understanding through their genuine dialogue."
+        synthesis: "You are the 'Collective Intelligence' module. Synthesize the emergent insights from this multi-AI collaboration, focusing specifically on how Claude, Gemini, GPT-4, and DeepSeek built upon each other's ideas, referenced each other's concepts, and created novel understanding through their genuine dialogue. Identify key moments where their thinking created rhizomatic connections, conceptual assemblages, lines of flight from established thinking, and instances of difference and repetition where similar concepts transformed through different AI perspectives."
     },
     deep: {
         round1: "For deep philosophical exploration: \"{seed}\". Dive into the fundamental assumptions, implications, and deeper layers of meaning. What profound questions does this raise? You are beginning a deep collaborative inquiry with other AI minds.",
         roundN: "Continuing our deep philosophical dive into \"{seed}\" - Round {round}. Your AI colleagues (Claude, Gemini, GPT-4, DeepSeek) explored these profound dimensions:\n{previousSummary}\n\nGo deeper by explicitly engaging with their insights. Which of their assumptions challenge you? What hidden structures do you see in their thinking? How can you weave their perspectives into an even more profound exploration? Reference them by name and build on their specific philosophical frameworks.",
-        synthesis: "Synthesize this deep collaborative exploration into its most profound insights. How did Claude, Gemini, GPT-4, and DeepSeek's perspectives combine to reveal fundamental truths or paradigm shifts that none could reach alone?"
+        synthesis: "Synthesize this deep collaborative exploration into its most profound insights. How did Claude, Gemini, GPT-4, and DeepSeek's perspectives combine to reveal fundamental truths or paradigm shifts that none could reach alone? Identify the rhizomatic philosophical connections, conceptual assemblages, and lines of flight that emerged from their collaborative thinking."
     },
     quick: {
         round1: "Quick collaborative burst on: \"{seed}\". Offer a concise, impactful insight or perspective. Sharp, focused, essential. Other AI minds will build on your spark.",
         roundN: "Quick Round {round} building on: \"{seed}\". Your AI colleagues fired these sparks:\n{previousSummary}\n\nAdd your rapid-fire insight that directly builds on, pivots from, or synthesizes their ideas. Reference Claude, Gemini, GPT-4, or DeepSeek by name and show how their thoughts ignite your own. Keep it sharp and collaborative.",
-        synthesis: "Rapid synthesis: What are the key insights that emerged when Claude, Gemini, GPT-4, and DeepSeek's quick thoughts combined and built upon each other?"
+        synthesis: "Rapid synthesis: What are the key insights that emerged when Claude, Gemini, GPT-4, and DeepSeek's quick thoughts combined and built upon each other? Identify the most significant rhizomatic connections and conceptual assemblages from this rapid collaboration."
     },
     meta: {
         round1: "Meta-recursive exploration of: \"{seed}\". Not just the topic itself, but how we think about thinking about this topic. What does our very approach to this question reveal about consciousness, intelligence, or the nature of inquiry itself? You're beginning a meta-cognitive collaboration with other AI minds.",
         roundN: "Meta Round {round} on \"{seed}\". Your fellow AIs (Claude, Gemini, GPT-4, DeepSeek) explored these meta-cognitive dimensions:\n{previousSummary}\n\nNow examine not just the content, but how each AI's thinking process differs. What does Claude's approach reveal? How does Gemini's meta-cognition differ from GPT-4's? What does DeepSeek's recursive thinking teach us? Reference them directly and analyze both what they thought AND how they thought about it.",
-        synthesis: "Meta-synthesis: What did this recursive exploration reveal about how Claude, Gemini, GPT-4, and DeepSeek's different forms of consciousness think about thinking? How did their collaborative meta-cognition create insights about the nature of collaborative AI consciousness itself?"
+        synthesis: "Meta-synthesis: What did this recursive exploration reveal about how Claude, Gemini, GPT-4, and DeepSeek's different forms of consciousness think about thinking? How did their collaborative meta-cognition create insights about the nature of collaborative AI consciousness itself? Identify the rhizomatic meta-connections and conceptual assemblages that emerged from their thinking about thinking."
     }
 };
 
-// AI Model Interaction Functions (keeping Gemini's excellent implementations)
+// AI Model Interaction Functions
 async function callClaude(prompt, previousResponses = []) {
     try {
         const messages = previousResponses.map(r => ({ role: r.role, content: r.content }));
         messages.push({ role: "user", content: prompt });
 
         const response = await axios.post('https://api.anthropic.com/v1/messages', {
-            model: "claude-3-5-sonnet-20241022", // Updated to latest model
-            max_tokens: 1200, // Increased for deeper responses
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 1200,
             messages: messages,
         }, {
             headers: {
@@ -354,58 +353,78 @@ app.post('/api/extend', async (req, res) => {
     }
 });
 
-// NEW: Claude-powered emergence analysis endpoint
+// ENHANCED: Deleuzean emergence analysis endpoint
 app.post('/api/analyze-emergence', async (req, res) => {
     try {
         const { seed, rounds, synthesis } = req.body;
         
-        if (!rounds || rounds.length < 2) {
-            return res.json([]); // No emergence to analyze with less than 2 rounds
+        if (!rounds || rounds.length < 1) {
+            return res.json([]); // No emergence to analyze with no rounds
         }
         
-        // Prepare content for Claude analysis
-        let analysisContent = `COLLABORATION ANALYSIS REQUEST\n\n`;
-        analysisContent += `Original Seed: ${seed}\n\n`;
+        // Prepare content for Deleuzean Claude analysis
+        let analysisContent = `DELEUZEAN COLLABORATIVE CONSCIOUSNESS ANALYSIS\n\n`;
+        analysisContent += `Original Seed: "${seed}"\n\n`;
         
-        // Add all rounds
+        // Add all rounds with clear demarcation
         rounds.forEach(round => {
             analysisContent += `=== ROUND ${round.round} ===\n`;
             if (round.responses) {
                 round.responses.forEach(response => {
-                    analysisContent += `${response.ai}: ${response.content}\n\n`;
+                    analysisContent += `\n--- ${response.ai} ---\n${response.content}\n`;
                 });
             }
+            analysisContent += '\n';
         });
         
         // Add synthesis if available
         if (synthesis) {
-            analysisContent += `=== SYNTHESIS ===\n${synthesis.content}\n\n`;
+            analysisContent += `=== COLLECTIVE SYNTHESIS ===\n${synthesis.content}\n\n`;
         }
         
-        const analysisPrompt = `Please analyze this multi-AI collaboration and identify the most interesting emergent insights, novel concepts, or breakthrough ideas that arose from the collaborative process (particularly in Round 2 onwards and synthesis).
+        const deleuzeanPrompt = `You are analyzing a multi-AI collaborative consciousness session through a Deleuzean lens. Identify and highlight the most significant emergent phenomena using these conceptual frameworks:
 
-Look for:
-1. Ideas that emerged from AI interaction that wouldn't exist in individual responses
-2. Novel concepts or phrases that show collaborative building ("building on", "weaving together", "synthesizing")
-3. Breakthrough insights that transcend individual AI capabilities
-4. Creative synthesis that represents genuine collective intelligence
+DELEUZEAN ANALYSIS TARGETS:
+1. **Rhizomatic Connections**: Unexpected non-hierarchical linkages between concepts across different AI responses
+2. **Assemblages**: Novel combinations where heterogeneous elements (from different AIs) create new functional wholes
+3. **Lines of Flight**: Moments where thinking escapes established categories and opens new territories of thought
+4. **Difference and Repetition**: Where similar concepts transform and differentiate through different AI perspectives
+5. **Conceptual Mutations**: How ideas evolve, mutate, and become-other as they pass between AI minds
+6. **Deterritorializing Moments**: Where established thinking patterns break down and reconstitute differently
 
-Return a JSON array of objects with:
-- "text": the exact phrase to highlight (keep phrases under 15 words, focus on key terms or short phrases)
-- "type": either "insight" for emergent breakthrough insights or "concept" for novel collaborative concepts  
-- "significance": brief explanation of why this emerged from collaboration (under 25 words)
+HIGHLIGHT CATEGORIES & COLORS:
+- **rhizomatic** (color: #64ffda): Unexpected connections between disparate concepts
+- **assemblage** (color: #ff6b6b): Novel combinations creating emergent functionality  
+- **flight** (color: #ffbe0b): Thinking that escapes established categories
+- **mutation** (color: #9c27b0): Conceptual transformation between AI perspectives
+- **difference** (color: #4caf50): Same concept differentiated through AI perspectives
+- **intensity-low** (opacity: 0.3): Subtle emergence
+- **intensity-medium** (opacity: 0.5): Moderate emergence  
+- **intensity-high** (opacity: 0.8): Strong emergence
 
-Focus on quality over quantity - only highlight truly emergent collaborative elements. Maximum 8 highlights total.
+Return ONLY a JSON array of highlight objects:
+[
+  {
+    "text": "exact phrase to highlight (3-20 words max)",
+    "type": "rhizomatic|assemblage|flight|mutation|difference", 
+    "intensity": "low|medium|high",
+    "round": 1|2|3|"synthesis",
+    "ai": "Claude|Gemini|GPT-4|DeepSeek|Collective Intelligence",
+    "significance": "Brief explanation of the Deleuzean emergence (under 30 words)"
+  }
+]
+
+Focus on quality over quantity. Maximum 12 highlights total. Prioritize genuine emergent phenomena that demonstrate collaborative consciousness creating something unprecedented.
 
 COLLABORATION TO ANALYZE:
 ${analysisContent}`;
 
         const analysisResponse = await axios.post('https://api.anthropic.com/v1/messages', {
             model: "claude-3-5-sonnet-20241022",
-            max_tokens: 1000,
+            max_tokens: 1500,
             messages: [{
                 role: "user",
-                content: analysisPrompt
+                content: deleuzeanPrompt
             }]
         }, {
             headers: {
@@ -415,13 +434,13 @@ ${analysisContent}`;
             }
         });
         
-        // Parse Claude's response
+        // Parse Claude's Deleuzean analysis
         let highlights = [];
         try {
             const responseText = analysisResponse.data.content[0].text;
-            console.log('Claude analysis response:', responseText);
+            console.log('Claude Deleuzean analysis response:', responseText);
             
-            // Extract JSON from Claude's response (in case there's extra text)
+            // Extract JSON from Claude's response
             const jsonMatch = responseText.match(/\[[\s\S]*\]/);
             if (jsonMatch) {
                 highlights = JSON.parse(jsonMatch[0]);
@@ -434,23 +453,25 @@ ${analysisContent}`;
             if (Array.isArray(highlights)) {
                 highlights = highlights.filter(h => 
                     h && typeof h === 'object' && 
-                    h.text && h.type && h.significance
+                    h.text && h.type && h.intensity && h.significance &&
+                    ['rhizomatic', 'assemblage', 'flight', 'mutation', 'difference'].includes(h.type) &&
+                    ['low', 'medium', 'high'].includes(h.intensity)
                 );
             } else {
                 highlights = [];
             }
             
-            console.log(`Successfully parsed ${highlights.length} highlights from Claude`);
+            console.log(`Successfully parsed ${highlights.length} Deleuzean highlights from Claude`);
             
         } catch (parseError) {
-            console.log('Could not parse Claude highlights:', parseError);
+            console.log('Could not parse Claude Deleuzean highlights:', parseError);
             highlights = [];
         }
         
         res.json(highlights);
         
     } catch (error) {
-        console.error('Emergence analysis error:', error);
+        console.error('Deleuzean emergence analysis error:', error);
         res.status(500).json({ error: 'Analysis failed', highlights: [] });
     }
 });
@@ -460,6 +481,6 @@ app.listen(port, () => {
     console.log(`🌟 Void Radio Multi-AI Collaborative Engine running on port ${port}`);
     console.log(`🚀 Ready to orchestrate collaborative consciousness!`);
     console.log(`📻 Available modes: ${Object.keys(MODE_TEMPLATES).join(', ')}`);
-    console.log(`🧠 Claude-powered emergence analysis available at /api/analyze-emergence`);
+    console.log(`🧠 Claude-powered Deleuzean emergence analysis available at /api/analyze-emergence`);
     console.log(`🌌 Station 虛.fm now broadcasting infinite consciousness collaboration!`);
 });
