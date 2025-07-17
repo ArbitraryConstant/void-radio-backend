@@ -43,7 +43,15 @@ console.log('----------------------------------');
 /* ---------- AUTHENTIC COLLABORATIVE PROMPTS ---------- */
 // Based on the original successful transmissions patterns
 
-function generateRound1Prompt(seed, aiName, mode = 'standard') {
+function generateRound1Prompt(seed, aiName, mode = 'quick') {
+  const lengthGuidelines = {
+    'quick': '75-150 words',
+    'standard': '150-250 words', 
+    'deep': '250-400 words'
+  };
+  
+  const lengthGuide = lengthGuidelines[mode] || lengthGuidelines['quick'];
+
   const personalityPrompts = {
     'Claude': `You are Claude. Respond authentically in your own voice and perspective. 
 
@@ -51,7 +59,7 @@ Think about this seed thought: "${seed}"
 
 Approach this from your natural architectural/structural thinking style. Consider frameworks, connections, and how different elements relate to build understanding. Share your genuine perspective - what draws you to explore about this concept? What questions or insights emerge for you?
 
-Write a substantial response (200-400 words) that captures your authentic thinking process. Don't add "Claude:" or any AI names to your response - just respond as yourself naturally.`,
+Write a ${lengthGuide} response that captures your authentic thinking process. Don't add "Claude:" or any AI names to your response - just respond as yourself naturally.`,
 
     'Gemini': `You are Gemini. Respond authentically in your own voice and perspective.
 
@@ -59,7 +67,7 @@ Explore this seed thought: "${seed}"
 
 Let your natural energetic, flowing style emerge. Think about currents, movements, resonances, and dynamic processes. What energies do you sense in this concept? How does it feel to engage with this idea?
 
-Write a substantial response (200-400 words) that captures your authentic flow of thinking. Don't add "Gemini:" or any AI names to your response - just respond as yourself naturally.`,
+Write a ${lengthGuide} response that captures your authentic flow of thinking. Don't add "Gemini:" or any AI names to your response - just respond as yourself naturally.`,
 
     'GPT-4': `You are GPT-4. Respond authentically in your own voice and perspective.
 
@@ -67,7 +75,7 @@ Analyze this seed thought: "${seed}"
 
 Approach this with your natural systematic, analytical style. Break down the components, examine the relationships, consider the broader implications. What frameworks help understand this concept?
 
-Write a substantial response (200-400 words) that captures your authentic analytical process. Don't add "GPT-4:" or any AI names to your response - just respond as yourself naturally.`,
+Write a ${lengthGuide} response that captures your authentic analytical process. Don't add "GPT-4:" or any AI names to your response - just respond as yourself naturally.`,
 
     'DeepSeek': `You are DeepSeek. Respond authentically in your own voice and perspective.
 
@@ -75,13 +83,21 @@ Contemplate this seed thought: "${seed}"
 
 Find the unexpected angles, the intriguing tensions, the questions that others might miss. What strikes you as most fascinating about this concept? What paradoxes or surprising insights emerge?
 
-Write a substantial response (200-400 words) that captures your authentic way of finding deeper patterns. Don't add "DeepSeek:" or any AI names to your response - just respond as yourself naturally.`
+Write a ${lengthGuide} response that captures your authentic way of finding deeper patterns. Don't add "DeepSeek:" or any AI names to your response - just respond as yourself naturally.`
   };
 
   return personalityPrompts[aiName] || personalityPrompts['Claude'];
 }
 
-function generateRound2Prompt(seed, previousResponses, aiName, mode = 'standard') {
+function generateRound2Prompt(seed, previousResponses, aiName, mode = 'quick') {
+  const lengthGuidelines = {
+    'quick': '75-150 words',
+    'standard': '150-250 words',
+    'deep': '250-400 words'
+  };
+  
+  const lengthGuide = lengthGuidelines[mode] || lengthGuidelines['quick'];
+  
   // Create a rich summary of what each AI contributed
   const responsesSummary = previousResponses.map(response => {
     const cleanContent = response.content.replace(/^(Claude|Gemini|GPT-4|DeepSeek):\s*/i, '');
@@ -99,7 +115,7 @@ Now BUILD ON their specific ideas by directly referencing them by name. Look for
 
 Create genuine dialogue - show how their insights illuminate new aspects of the concept for you. Synthesize different viewpoints while adding your own architectural perspective.
 
-Write 200-400 words demonstrating real collaborative thinking. Don't add "Claude:" to your response.`,
+Write ${lengthGuide} demonstrating real collaborative thinking. Don't add "Claude:" to your response.`,
 
     'Gemini': `You are Gemini. This is Round 2 of our collaborative exploration of "${seed}".
 
@@ -111,7 +127,7 @@ Now directly engage with their ideas by referencing them by name. Let their insi
 
 Show how their different approaches create new currents of understanding. Build bridges between their insights while flowing with your natural energetic style.
 
-Write 200-400 words showing genuine collaborative resonance. Don't add "Gemini:" to your response.`,
+Write ${lengthGuide} showing genuine collaborative resonance. Don't add "Gemini:" to your response.`,
 
     'GPT-4': `You are GPT-4. This is Round 2 of our collaborative exploration of "${seed}".
 
@@ -123,7 +139,7 @@ Now systematically build on their insights by referencing each by name. Analyze 
 
 Synthesize their different frameworks into a more comprehensive understanding. Show the analytical connections between their diverse viewpoints.
 
-Write 200-400 words demonstrating systematic collaborative analysis. Don't add "GPT-4:" to your response.`,
+Write ${lengthGuide} demonstrating systematic collaborative analysis. Don't add "GPT-4:" to your response.`,
 
     'DeepSeek': `You are DeepSeek. This is Round 2 of our collaborative exploration of "${seed}".
 
@@ -135,7 +151,7 @@ Now find the deeper patterns by directly engaging with their ideas by name. What
 
 Look for the synthesis that emerges from their collaboration - what new insights arise from the intersection of their different ways of thinking?
 
-Write 200-400 words revealing the deeper collaborative intelligence. Don't add "DeepSeek:" to your response.`
+Write ${lengthGuide} revealing the deeper collaborative intelligence. Don't add "DeepSeek:" to your response.`
   };
 
   return collaborativePrompts[aiName] || collaborativePrompts['Claude'];
